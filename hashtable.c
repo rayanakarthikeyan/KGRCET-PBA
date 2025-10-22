@@ -5,7 +5,7 @@
 
 typedef enum { LINEAR_PROBING=1, SEPARATE_CHAINING=2 } CollisionMethod;
 
-// For Linear Probing
+// Linear Probing Hash Table
 typedef struct {
     int *table;
     int size;
@@ -14,7 +14,7 @@ typedef struct {
     int probes;
 } LinearProbingHashTable;
 
-// For Separate Chaining
+// Separate Chaining Hash Table
 typedef struct Node {
     int key;
     struct Node* next;
@@ -26,8 +26,6 @@ typedef struct {
     int count;
     int collisions;
 } SeparateChainingHashTable;
-
-// Utility functions
 
 int hash1(int key) {
     return key % TABLE_SIZE;
@@ -64,7 +62,6 @@ int linear_insert(LinearProbingHashTable* ht, int key) {
     return 1; // inserted
 }
 
-// Separate chaining functions
 SeparateChainingHashTable* create_chaining_table() {
     SeparateChainingHashTable* ht = malloc(sizeof(SeparateChainingHashTable));
     ht->size = TABLE_SIZE;
@@ -94,8 +91,6 @@ int chaining_insert(SeparateChainingHashTable* ht, int key) {
     return 1; // inserted
 }
 
-// Cleanup functions
-
 void free_linear_table(LinearProbingHashTable* ht) {
     free(ht->table);
     free(ht);
@@ -114,12 +109,10 @@ void free_chaining_table(SeparateChainingHashTable* ht) {
     free(ht);
 }
 
-// Main API for insertion: returns collisions and probes for the batch of keys
-
 typedef struct {
     int total_inserts;
     int total_collisions;
-    int total_probes; // only for linear probing
+    int total_probes;
 } Stats;
 
 Stats run_linear_probing(int* keys, int n) {
@@ -146,16 +139,11 @@ Stats run_separate_chaining(int* keys, int n) {
         if(res == 1) stats.total_inserts++;
     }
     stats.total_collisions = ht->collisions;
-    stats.total_probes = 0; // not meaningful here
+    stats.total_probes = 0;
 
     free_chaining_table(ht);
     return stats;
 }
-
-// Expose a function for Python to call
-// We use collision_method = 1 for linear, 2 for chaining
-// keys is int array, n is number of keys
-// result is Stats struct returned by value (use pointer in Python)
 
 #ifdef _WIN32
 #define EXPORT __declspec(dllexport)
